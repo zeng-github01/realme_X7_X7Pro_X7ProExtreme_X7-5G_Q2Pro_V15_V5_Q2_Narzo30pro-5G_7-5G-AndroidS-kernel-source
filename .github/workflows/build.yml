@@ -57,7 +57,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc64/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc32/bin:$PATH
-        make -s -j$(nproc --all) O=out ARCH=arm64 k6889v1_64_defconfig
+        make -s -j$(nproc --all) O=out ARCH=arm64 rmx2121_defconfig
         make -j$(nproc --all) CC="ccache clang" O=out ARCH=arm64 \
           CLANG_TRIPLE=aarch64-linux-gnu- \
           CROSS_COMPILE=aarch64-linux-android- \
