@@ -63,11 +63,6 @@ jobs:
           CROSS_COMPILE=aarch64-linux-android- \
           CROSS_COMPILE_ARM32=arm-linux-androideabi- \
           LD=ld.lld || (echo "::error 编译失败"; exit 1)
-    - name: 编译并安装内核模块
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        make -j$(nproc --all) O=out ARCH=arm64 modules
-        make O=out ARCH=arm64 modules_install INSTALL_MOD_PATH=$GITHUB_WORKSPACE/kernel_workspace/modules_out
 
     - name: 制作 AnyKernel3 卡刷包
       run: |
