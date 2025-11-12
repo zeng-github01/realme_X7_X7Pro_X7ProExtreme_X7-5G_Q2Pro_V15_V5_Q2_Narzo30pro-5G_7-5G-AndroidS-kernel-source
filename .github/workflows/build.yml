@@ -45,7 +45,7 @@ jobs:
     - name: 更新 KernelSU
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+        curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 
     - name: 设置 ccache 缓存
       uses: hendrikmuhs/ccache-action@v1.2
@@ -58,6 +58,11 @@ jobs:
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc64/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc32/bin:$PATH
         make -s -j$(nproc --all) O=out ARCH=arm64 rmx2121_defconfig
+        make prepare CC="ccache clang" O=out ARCH=arm64 \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
+          CROSS_COMPILE=aarch64-linux-android- \
+          CROSS_COMPILE_ARM32=arm-linux-androideabi- \
+          LD=ld.lld
         make -j$(nproc --all) CC="ccache clang" O=out ARCH=arm64 \
           CLANG_TRIPLE=aarch64-linux-gnu- \
           CROSS_COMPILE=aarch64-linux-android- \
