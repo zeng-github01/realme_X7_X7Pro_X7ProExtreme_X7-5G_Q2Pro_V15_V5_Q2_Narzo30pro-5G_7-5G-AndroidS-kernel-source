@@ -68,7 +68,9 @@ jobs:
           CROSS_COMPILE=aarch64-linux-android- \
           CROSS_COMPILE_ARM32=arm-linux-androideabi- \
           LD=ld.lld || (echo "::error 编译失败"; exit 1)
-
+        make -j$(nproc) O=out ARCH=arm64   CC="ccache clang"   CLANG_TRIPLE=aarch64-linux-gnu-   CROSS_COMPILE=aarch64-linux-android-   CROSS_COMPILE_ARM32=arm-linux-androideabi-  modules
+        make O=out ARCH=arm64 INSTALL_MOD_PATH=out/modules modules_install
+        
     - name: 制作 AnyKernel3 卡刷包
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -87,6 +89,12 @@ jobs:
         DATE=$(date +%Y%m%d)
         cd AnyKernel3
         zip -r "KernelSU-${KERNEL_VER}-${DATE}.zip" ./*
+        
+    - name: 打包模块为 zip
+      run: |
+        cd out/modules
+        mkdir -p upload
+        zip -r upload/kernel-modules.zip lib
 
     - name: 上传编译产物到 Release
       uses: softprops/action-gh-release@v2
@@ -94,6 +102,7 @@ jobs:
         files: |
           kernel_workspace/AnyKernel3/KernelSU-*.zip
           kernel_workspace/android-kernel/out/arch/arm64/boot/Image.gz
+          kernel_workspace/android-kernel/out/modules/upload/kernel-modules.zip
         name: ${{ github.run_id }}
         tag_name: ${{ github.run_id }}
       env:
