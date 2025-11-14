@@ -85,8 +85,7 @@ jobs:
         cp android-kernel/out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
         find AnyKernel3/ -name ".git*" -exec rm -rf {} +
         rm -f AnyKernel3/README.md
-        yes "" | make -C android-kernel/out ARCH=arm64 olddefconfig
-        KERNEL_VER=$(make -s -C android-kernel/out kernelrelease)
+        KERNEL_VER=4.14.186+
         DATE=$(date +%Y%m%d)
         cd AnyKernel3
         zip -r "KernelSU-${KERNEL_VER}-${DATE}.zip" ./*
