@@ -45,7 +45,7 @@ jobs:
     - name: 更新 KernelSU
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s df2b414dc133fb1184567a54c8e08315f6dcc731
+        curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s 3309c4787b0f873fb51d35e6e151dd220577b441
 
     - name: 设置 ccache 缓存
       uses: hendrikmuhs/ccache-action@v1.2
