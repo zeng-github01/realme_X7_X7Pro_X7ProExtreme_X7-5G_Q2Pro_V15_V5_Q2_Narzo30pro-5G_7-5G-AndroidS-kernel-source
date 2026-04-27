@@ -63,14 +63,14 @@ jobs:
         # 即使 sched.h 失败也继续，后续手动修复
         patch -p1 < ../susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.14.patch || true
 
-        # 4. 【关键修复】手动注入 sched.h 缺失的代码
-        # 既然自动补丁失败，我们用 sed 在 task_struct 结构体中注入变量
-        # 查找 'void *security;' 并在其后添加 susfs 变量
+         # 4. 【手动修复】针对 include/linux/sched.h 的注入
+        # 补丁失败是因为行号对不上，我们用 sed 搜索 'void *security;' 并在其后插入变量
+        # 这是 SUSFS 运行最核心的数据结构修改
         sed -i '/void.*\*security;/a \ \ \ \ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\n\t\tu64 android_kabi_reserved1;\n\t\tu64 android_kabi_reserved2;\n\t#endif' include/linux/sched.h
 
-        # 5. 【路径修复】应用 KSU 侧的配置补丁 (10_enable_susfs_for_ksu.patch)
-        # 注意：这个补丁内部包含 'kernel/Kconfig'，而你的 KSU 源码就在 'kernel/' 目录
-        # 所以我们必须在内核根目录下运行，并且使用 -p1
+        # 5. 【修复路径】应用 KSU 专用配置补丁
+        # 补丁内路径是 a/kernel/Kconfig，而你的 KSU 源码就在 kernel/ 文件夹
+        # 所以必须在内核根目录执行 -p1 才能正确对应上路径
         patch -p1 < ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch
 
     - name: 设置 ccache 缓存
