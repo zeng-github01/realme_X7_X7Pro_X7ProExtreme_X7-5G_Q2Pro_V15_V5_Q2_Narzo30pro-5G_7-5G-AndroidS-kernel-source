@@ -55,21 +55,22 @@ jobs:
         
         cd android-kernel
 
-        # 2. 拷贝核心系统调用文件
+        # 2. 拷贝核心系统调用文件 (fs 和 include)
         cp ../susfs4ksu/kernel_patches/fs/* ./fs/
         cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
-        # 3. 应用内核主体补丁（忽略 sched.h 的报错）
-        # 使用 || true 确保即便 sched.h 冲突，Action 也能继续运行执行后续修复
+        # 3. 应用内核主体补丁 (50_add_susfs...)
+        # 即使 sched.h 失败也继续，后续手动修复
         patch -p1 < ../susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.14.patch || true
 
-        # 4. 手动修复 include/linux/sched.h (补丁冲突点)
-        # 我们直接在 task_struct 结构体中注入 susfs_state 变量
-        # 这一步是为了修复刚才报错的 "Hunk #1 FAILED at 1364"
+        # 4. 【关键修复】手动注入 sched.h 缺失的代码
+        # 既然自动补丁失败，我们用 sed 在 task_struct 结构体中注入变量
+        # 查找 'void *security;' 并在其后添加 susfs 变量
         sed -i '/void.*\*security;/a \ \ \ \ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\n\t\tu64 android_kabi_reserved1;\n\t\tu64 android_kabi_reserved2;\n\t#endif' include/linux/sched.h
 
-        # 5. 应用开启 SUSFS 配置的补丁
-        # 已经在内核根目录，直接应用即可
+        # 5. 【路径修复】应用 KSU 侧的配置补丁 (10_enable_susfs_for_ksu.patch)
+        # 注意：这个补丁内部包含 'kernel/Kconfig'，而你的 KSU 源码就在 'kernel/' 目录
+        # 所以我们必须在内核根目录下运行，并且使用 -p1
         patch -p1 < ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch
 
     - name: 设置 ccache 缓存
