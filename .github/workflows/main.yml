@@ -47,32 +47,6 @@ jobs:
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
 
-    - name: 集成 SUSFS
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace
-        # 1. 克隆补丁仓库
-        git clone -b 1.4.2-kernel-4.14 https://gitlab.com/simonpunk/susfs4ksu.git susfs4ksu
-        
-        cd android-kernel
-
-        # 2. 拷贝核心系统调用文件 (fs 和 include)
-        cp ../susfs4ksu/kernel_patches/fs/* ./fs/
-        cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
-
-        # 3. 应用内核主体补丁 (50_add_susfs...)
-        # 即使 sched.h 失败也继续，后续手动修复
-        patch -p1 < ../susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.14.patch || true
-
-         # 4. 【手动修复】针对 include/linux/sched.h 的注入
-        # 补丁失败是因为行号对不上，我们用 sed 搜索 'void *security;' 并在其后插入变量
-        # 这是 SUSFS 运行最核心的数据结构修改
-        sed -i '/void.*\*security;/a \ \ \ \ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\n\t\tu64 android_kabi_reserved1;\n\t\tu64 android_kabi_reserved2;\n\t#endif' include/linux/sched.h
-
-        # 5. 【修复路径】应用 KSU 专用配置补丁
-        # 补丁内路径是 a/kernel/Kconfig，而你的 KSU 源码就在 kernel/ 文件夹
-        # 所以必须在内核根目录执行 -p1 才能正确对应上路径
-        patch -p1 < ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch
-
     - name: 设置 ccache 缓存
       uses: hendrikmuhs/ccache-action@v1.2
       with:
